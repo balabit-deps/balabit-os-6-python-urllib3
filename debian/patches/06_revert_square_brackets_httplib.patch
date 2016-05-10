@@ -1,0 +1,24 @@
+From a3b9a34be9dccfc42df65b2403bc0c6666fd3392 Mon Sep 17 00:00:00 2001
+From: Cory Benfield <lukasaoz@gmail.com>
+Date: Wed, 10 Feb 2016 09:49:24 +0000
+Subject: [PATCH] Revert "We do not require square brackets for httplib."
+
+This reverts commit 019dbaeadb6318d98c78f2c874e2d49c06ebda15.
+---
+ urllib3/connectionpool.py | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/urllib3/connectionpool.py b/urllib3/connectionpool.py
+index 5a9d766..6f6e905 100644
+--- a/urllib3/connectionpool.py
++++ b/urllib3/connectionpool.py
+@@ -69,7 +69,8 @@ def __init__(self, host, port=None):
+         if not host:
+             raise LocationValueError("No host specified.")
+ 
+-        self.host = host
++        # httplib doesn't like it when we include brackets in ipv6 addresses
++        self.host = host.strip('[]')
+         self.port = port
+ 
+     def __str__(self):
