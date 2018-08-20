@@ -1,0 +1,224 @@
+From 81542b2ccd8d27783533aa28f94e7cd0ced79749 Mon Sep 17 00:00:00 2001
+From: Cory Benfield <lukasaoz@gmail.com>
+Date: Mon, 12 Sep 2016 10:11:41 +0100
+Subject: [PATCH] Merge pull request #922 from Lukasa/iPAddress-SAN
+
+Add support for IP address SAN fields.
+
+(cherry picked from commit c74bd70c3a97e30f0560bee9b7fa1bfc767ebf0b)
+---
+ CHANGES.rst                                   |  6 ++
+ dummyserver/certs/server.ip_san.crt           | 21 +++++++
+ dummyserver/server.py                         |  4 ++
+ setup.cfg                                     |  1 +
+ setup.py                                      |  3 +
+ test/with_dummyserver/test_https.py           | 14 ++++-
+ .../packages/ssl_match_hostname/__init__.py   |  8 ++-
+ .../ssl_match_hostname/_implementation.py     | 58 ++++++++++++++++++-
+ 8 files changed, 110 insertions(+), 5 deletions(-)
+ create mode 100644 dummyserver/certs/server.ip_san.crt
+
+--- a/CHANGES.rst
++++ b/CHANGES.rst
+@@ -1,6 +1,12 @@
+ Changes
+ =======
+ 
++Distribution
++++++++++++++
++
++* Accept ``iPAddress`` subject alternative name fields in TLS certificates.
++  (Issue #258)
++
+ 1.13.1 (2015-12-18)
+ +++++++++++++++++++
+ 
+--- /dev/null
++++ b/dummyserver/certs/server.ip_san.crt
+@@ -0,0 +1,21 @@
++-----BEGIN CERTIFICATE-----
++MIIDeTCCAuKgAwIBAgIBATANBgkqhkiG9w0BAQUFADCBgTELMAkGA1UEBhMCRkkx
++DjAMBgNVBAgMBWR1bW15MQ4wDAYDVQQHDAVkdW1teTEOMAwGA1UECgwFZHVtbXkx
++DjAMBgNVBAsMBWR1bW15MREwDwYDVQQDDAhTbmFrZU9pbDEfMB0GCSqGSIb3DQEJ
++ARYQZHVtbXlAdGVzdC5sb2NhbDAeFw0xMTEyMjIwNzU4NDBaFw0yMTEyMTgwNzU4
++NDBaMGExCzAJBgNVBAYTAkZJMQ4wDAYDVQQIDAVkdW1teTEOMAwGA1UEBwwFZHVt
++bXkxDjAMBgNVBAoMBWR1bW15MQ4wDAYDVQQLDAVkdW1teTESMBAGA1UEAwwJbG9j
++YWxob3N0MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDXe3FqmCWvP8XPxqtT
+++0bfL1Tvzvebi46k0WIcUV8bP3vyYiSRXG9ALmyzZH4GHY9UVs4OEDkCMDOBSezB
++0y9ai/9doTNcaictdEBu8nfdXKoTtzrn+VX4UPrkH5hm7NQ1fTQuj1MR7yBCmYqN
++3Q2Q+Efuujyx0FwBzAuy1aKYuwIDAQABo4IBHjCCARowCQYDVR0TBAIwADAdBgNV
++HQ4EFgQUG+dK5Uos08QUwAWofDb3a8YcYlIwgbYGA1UdIwSBrjCBq4AUGXd/I2Ji
++QllF+3Wdx3NyBLszCi2hgYekgYQwgYExCzAJBgNVBAYTAkZJMQ4wDAYDVQQIDAVk
++dW1teTEOMAwGA1UEBwwFZHVtbXkxDjAMBgNVBAoMBWR1bW15MQ4wDAYDVQQLDAVk
++dW1teTERMA8GA1UEAwwIU25ha2VPaWwxHzAdBgkqhkiG9w0BCQEWEGR1bW15QHRl
++c3QubG9jYWyCCQCz67HKL+G/4zAJBgNVHRIEAjAAMCoGA1UdEQQjMCGBDnJvb3RA
++bG9jYWxob3N0gglsb2NhbGhvc3SHBH8AAAEwDQYJKoZIhvcNAQEFBQADgYEAFEAy
++O9rxM14W0pVJWHTZkWBcDTqp8A8OB3JFVxeuCNcbtyfyYLWs2juv4YMmo1EKBOQe
++7LYfGuIvtIzT7KBa2QAPmX9JR+F6yl0IVSrYYt9hS7w9Cqr8+jK9QRpNwm3k25hp
++BmmoT5b9Q+AYcLMtdMu3uFjLmQBI2XobI/9vCT4=
++-----END CERTIFICATE-----
+--- a/dummyserver/server.py
++++ b/dummyserver/server.py
+@@ -34,6 +34,10 @@ NO_SAN_CERTS = {
+     'certfile': os.path.join(CERTS_PATH, 'server.no_san.crt'),
+     'keyfile': DEFAULT_CERTS['keyfile']
+ }
++IP_SAN_CERTS = {
++    'certfile': os.path.join(CERTS_PATH, 'server.ip_san.crt'),
++    'keyfile': DEFAULT_CERTS['keyfile']
++}
+ IPV6_ADDR_CERTS = {
+     'certfile': os.path.join(CERTS_PATH, 'server.ipv6addr.crt'),
+     'keyfile': os.path.join(CERTS_PATH, 'server.ipv6addr.key'),
+--- a/setup.cfg
++++ b/setup.cfg
+@@ -19,6 +19,7 @@ requires-dist =
+ 	ndg-httpsclient; python_version<="2.7" and extra == 'secure'
+ 	pyasn1; python_version<="2.7" and extra == 'secure'
+ 	certifi; extra == 'secure'
++    ipaddress; python_version<="2.7" and extra == 'secure'
+ 
+ [egg_info]
+ tag_build = 
+--- a/setup.py
++++ b/setup.py
+@@ -61,5 +61,8 @@ setup(name='urllib3',
+               'pyasn1',
+               'certifi',
+           ],
++          'secure:python_version <= "2.7"': [
++              "ipaddress",
++          ],
+       },
+       )
+--- a/test/with_dummyserver/test_https.py
++++ b/test/with_dummyserver/test_https.py
+@@ -13,7 +13,8 @@ from dummyserver.testcase import (
+ )
+ from dummyserver.server import (DEFAULT_CA, DEFAULT_CA_BAD, DEFAULT_CERTS,
+                                 NO_SAN_CERTS, NO_SAN_CA, DEFAULT_CA_DIR,
+-                                IPV6_ADDR_CERTS, IPV6_ADDR_CA, HAS_IPV6)
++                                IPV6_ADDR_CERTS, IPV6_ADDR_CA, HAS_IPV6,
++                                IP_SAN_CERTS)
+ 
+ from test import (
+     onlyPy26OrOlder,
+@@ -469,6 +470,17 @@ class TestHTTPS_NoSAN(HTTPSDummyServerTe
+             self.assertTrue(warn.called)
+ 
+ 
++class TestHTTPS_IPSAN(HTTPSDummyServerTestCase):
++    certs = IP_SAN_CERTS
++
++    def test_can_validate_ip_san(self):
++        """Ensure that urllib3 can validate SANs with IP addresses in them."""
++        https_pool = HTTPSConnectionPool('127.0.0.1', self.port,
++                                         cert_reqs='CERT_REQUIRED',
++                                         ca_certs=DEFAULT_CA)
++        r = https_pool.request('GET', '/')
++        self.assertEqual(r.status, 200)
++
+ 
+ class TestHTTPS_IPv6Addr(IPV6HTTPSDummyServerTestCase):
+     certs = IPV6_ADDR_CERTS
+--- a/urllib3/packages/ssl_match_hostname/__init__.py
++++ b/urllib3/packages/ssl_match_hostname/__init__.py
+@@ -1,5 +1,11 @@
++import sys
++
+ try:
+-    # Python 3.2+
++    # Our match_hostname function is the same as 3.5's, so we only want to
++    # import the match_hostname function if it's at least that good.
++    if sys.version_info < (3, 5):
++        raise ImportError("Fallback to vendored code")
++
+     from ssl import CertificateError, match_hostname
+ except ImportError:
+     try:
+--- a/urllib3/packages/ssl_match_hostname/_implementation.py
++++ b/urllib3/packages/ssl_match_hostname/_implementation.py
+@@ -4,8 +4,20 @@
+ # stdlib.   http://docs.python.org/3/license.html
+ 
+ import re
++import sys
++
++# ipaddress has been backported to 2.6+ in pypi.  If it is installed on the
++# system, use it to handle IPAddress ServerAltnames (this was added in
++# python-3.5) otherwise only do DNS matching.  This allows
++# backports.ssl_match_hostname to continue to be used all the way back to
++# python-2.4.
++try:
++    import ipaddress
++except ImportError:
++    ipaddress = None
++
++__version__ = '3.5.0.1'
+ 
+-__version__ = '3.4.0.2'
+ 
+ class CertificateError(ValueError):
+     pass
+@@ -64,6 +76,23 @@ def _dnsname_match(dn, hostname, max_wil
+     return pat.match(hostname)
+ 
+ 
++def _to_unicode(obj):
++    if isinstance(obj, str) and sys.version_info < (3,):
++        obj = unicode(obj, encoding='ascii', errors='strict')
++    return obj
++
++def _ipaddress_match(ipname, host_ip):
++    """Exact matching of IP addresses.
++
++    RFC 6125 explicitly doesn't define an algorithm for this
++    (section 1.7.2 - "Out of Scope").
++    """
++    # OpenSSL may add a trailing newline to a subjectAltName's IP address
++    # Divergence from upstream: ipaddress can't handle byte str
++    ip = ipaddress.ip_address(_to_unicode(ipname).rstrip())
++    return ip == host_ip
++
++
+ def match_hostname(cert, hostname):
+     """Verify that *cert* (in decoded format as returned by
+     SSLSocket.getpeercert()) matches the *hostname*.  RFC 2818 and RFC 6125
+@@ -73,12 +102,35 @@ def match_hostname(cert, hostname):
+     returns nothing.
+     """
+     if not cert:
+-        raise ValueError("empty or no certificate")
++        raise ValueError("empty or no certificate, match_hostname needs a "
++                         "SSL socket or SSL context with either "
++                         "CERT_OPTIONAL or CERT_REQUIRED")
++    try:
++        # Divergence from upstream: ipaddress can't handle byte str
++        host_ip = ipaddress.ip_address(_to_unicode(hostname))
++    except ValueError:
++        # Not an IP address (common case)
++        host_ip = None
++    except UnicodeError:
++        # Divergence from upstream: Have to deal with ipaddress not taking
++        # byte strings.  addresses should be all ascii, so we consider it not
++        # an ipaddress in this case
++        host_ip = None
++    except AttributeError:
++        # Divergence from upstream: Make ipaddress library optional
++        if ipaddress is None:
++            host_ip = None
++        else:
++            raise
+     dnsnames = []
+     san = cert.get('subjectAltName', ())
+     for key, value in san:
+         if key == 'DNS':
+-            if _dnsname_match(value, hostname):
++            if host_ip is None and _dnsname_match(value, hostname):
++                return
++            dnsnames.append(value)
++        elif key == 'IP Address':
++            if host_ip is not None and _ipaddress_match(value, host_ip):
+                 return
+             dnsnames.append(value)
+     if not dnsnames:

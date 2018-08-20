@@ -1,3 +1,10 @@
+python-urllib3 (1.13.1-2ubuntu0.16.04.2) xenial; urgency=medium
+
+  * d/p/07_support_ip_sans.patch: Cherry pick fix to support use of
+    IP based SAN's in TLS certificates (LP: #1771988).
+
+ -- James Page <james.page@ubuntu.com>  Mon, 20 Aug 2018 15:54:33 +0100
+
 python-urllib3 (1.13.1-2ubuntu0.16.04.1) xenial; urgency=medium
 
   * d/p/06_revert_square_brackets_httplib.patch: Cherry pick revert of

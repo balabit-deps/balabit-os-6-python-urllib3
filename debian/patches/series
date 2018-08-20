@@ -4,3 +4,4 @@
 04_relax_nosetests_options.patch
 05_avoid-embedded-ssl-match-hostname.patch
 06_revert_square_brackets_httplib.patch
+07_support_ip_sans.patch
