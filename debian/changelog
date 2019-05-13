@@ -1,3 +1,21 @@
+python-urllib3 (1.13.1-2ubuntu0.16.04.3) xenial-security; urgency=medium
+
+  * SECURITY UPDATE: credential disclosure via cross-origin redirect
+    - debian/patches/CVE-2018-20060-*.patch: backport logic to strip
+      Authorization header when following a cross-origin redirect.
+    - CVE-2018-20060
+  * SECURITY UPDATE: CRLF injection issue
+    - debian/patches/CVE-2019-11236-1.patch: check for control chars in URL
+      in urllib3/connection.py, urllib3/contrib/pyopenssl.py,
+      urllib3/util/url.py, test/test_util.py.
+    - debian/patches/CVE-2019-11236-2.patch: percent-encode invalid target
+      characters in urllib3/util/url.py, test/test_util.py.
+    - debian/patches/CVE-2019-11236-3.patch: don't use embedded python-six
+      in urllib3/util/url.py.
+    - CVE-2019-11236
+
+ -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Mon, 13 May 2019 15:26:05 -0400
+
 python-urllib3 (1.13.1-2ubuntu0.16.04.2) xenial; urgency=medium
 
   * d/p/07_support_ip_sans.patch: Cherry pick fix to support use of

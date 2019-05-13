@@ -5,3 +5,16 @@
 05_avoid-embedded-ssl-match-hostname.patch
 06_revert_square_brackets_httplib.patch
 07_support_ip_sans.patch
+CVE-2018-20060-1.patch
+CVE-2018-20060-2.patch
+CVE-2018-20060-3.patch
+CVE-2018-20060-5.patch
+CVE-2018-20060-6.patch
+CVE-2018-20060-7.patch
+CVE-2018-20060-8.patch
+CVE-2018-20060-9.patch
+CVE-2018-20060-10.patch
+CVE-2018-20060-12.patch
+CVE-2019-11236-1.patch
+CVE-2019-11236-2.patch
+CVE-2019-11236-3.patch
