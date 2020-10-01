@@ -1,3 +1,13 @@
+python-urllib3 (1.13.1-2ubuntu0.16.04.4) xenial-security; urgency=medium
+
+  * SECURITY UPDATE: CRLF injection via method parameter
+    - debian/patches/CVE-2020-26137.patch: raise ValueError if method
+      contains control characters in urllib3/connection.py,
+      test/with_dummyserver/test_connectionpool.py.
+    - CVE-2020-26137
+
+ -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Thu, 01 Oct 2020 14:08:36 -0400
+
 python-urllib3 (1.13.1-2ubuntu0.16.04.3) xenial-security; urgency=medium
 
   * SECURITY UPDATE: credential disclosure via cross-origin redirect
